@@ -1,11 +1,11 @@
 use std::num::NonZeroIsize;
-
+use crate::cluster_algos::agglomerative::AgglomerativeCluster;
 use crate::cluster_algos::lloyd::Kmeans;
 use crate::utils::mathfuncs::{silhouette_score, create_square, center_scale};
 use crate::utils::utility::*;
 use plots::{line_plot, scatter_plot};
 use plotters::prelude::*;
-use ndarray::{Array, Array2, Axis};
+use ndarray::{array, Array, Array2, Axis};
 use rand::prelude::*;
 pub mod cluster_algos;
 pub mod utils;
@@ -23,10 +23,10 @@ fn main() {
     let noise_intensity = 0;
 
     
-    let square_1: Array2<f32> = create_square(vec![2.0, 3.0], cluster_size, 2); // Cluster 1
-    let square_2: Array2<f32> = create_square(vec![7.0, 9.0], cluster_size, 2); // Cluster 2
-    let square_3: Array2<f32> = create_square(vec![2.0, 3.0], cluster_size, 2); // Cluster 3
-    let square_4: Array2<f32> = create_square(vec![7.0, 10.0], cluster_size + noise_intensity, 2); // A bunch of noise across them all
+    let square_1: Array2<f32> = create_square(vec![1.0, 3.0], vec![1.0, 3.0], cluster_size, 2); // Cluster 1
+    let square_2: Array2<f32> = create_square(vec![5.0, 7.0], vec![2.0, 4.0], cluster_size, 2); // Cluster 2
+    let square_3: Array2<f32> = create_square(vec![5.0, 7.0], vec![5.0, 7.0], cluster_size, 2); // Cluster 3
+    let square_4: Array2<f32> = create_square(vec![1.0, 3.0], vec![5.0, 7.0], cluster_size + noise_intensity, 2); // A bunch of noise across them all
 
     let mut data: Array2<f32> = ndarray::concatenate(
         Axis(0),
@@ -41,9 +41,14 @@ fn main() {
 
     center_scale(&mut data);
 
+    let mut model = AgglomerativeCluster {
+        centers: 4,
+        clusters: vec![vec![array![0.0]]]
+    };
 
+    /*
     let mut model = Kmeans  {
-        centers: 0,
+        centers: 4,
         accept: 0.7,
         max_centers: 7,
         initializer: "kmeans++",
@@ -52,15 +57,16 @@ fn main() {
         max_iter: 3000,
         retries: 10
     };
-
+    */
     let partitions = model.fit_predict(&data);
-    
+    print_vec(&partitions);
     println!("models is fitted");
-    print_array(&model.centroids);
+    //print_array(&model.centroids);
     println!("");
     //print_vec(&partitions);
+    let centroids = array![[0.0, 0.0]];
     //println!("");
-    let _ = scatter_plot("kmeans_fitted", &data, &partitions, &model.centroids);
+    let _ = scatter_plot("agglo_fitted", &data, &partitions, &centroids);
     println!("plot generated");
 
 

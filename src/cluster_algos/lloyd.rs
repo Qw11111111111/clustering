@@ -26,6 +26,9 @@ impl Kmeans {
         else if self.initializer == "kmeans++" {
             kmeanspp(data, &mut self.centroids);
         } 
+        else {
+            random_choice(data, &mut self.centroids);
+        }
     }
 
     pub fn fit_predict(&mut self, data: &Array2<f32>) -> Vec<i32> {

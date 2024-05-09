@@ -45,12 +45,17 @@ pub fn squared1d(mut x: Array1<f32>) -> Array1<f32> {
     return x;
 }
 
-pub fn create_square(min_max: Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
+pub fn create_square(min_max_y: Vec<f32>, min_max_x: Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
     let mut square = Array::<f32, _>::zeros((n_points, dim));
     let mut rng = thread_rng();
     for i in 0..n_points {
         for j in 0..dim {
-            square[[i, j]] = rng.gen_range(min_max[0]..min_max[1]);
+            if j == 0{
+                square[[i, j]] = rng.gen_range(min_max_x[0]..min_max_x[1]);
+            }
+            else {
+                square[[i, j]] = rng.gen_range(min_max_y[0]..min_max_y[1]);
+            }
         }
     }
     return square
@@ -77,4 +82,13 @@ pub fn center_scale(data: &mut Array2<f32>){
 
 pub fn square(x: f32) -> f32 {
     return x * x;
+}
+
+pub fn mean_of_vec_arr(vector: &Vec<Array1<f32>>) -> Array1<f32> {
+    let mut mean = Array1::zeros(vector[0].shape()[0]);
+    for arr in vector.into_iter() {
+        mean = mean + arr;
+    }
+    mean = mean / vector.len().to_f32().unwrap();
+    return mean;
 }

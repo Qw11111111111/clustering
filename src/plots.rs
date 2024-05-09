@@ -85,7 +85,7 @@ pub fn scatter_plot(name: &str, data: &Array2<f32>, partitions: &Vec<i32>, centr
                 .map(|(x, y)| Circle::new((*x, *y), 2, styles[i.to_usize().unwrap()].filled())),
         )?;
     }
-
+    /*
     for i in 0..max.to_usize().unwrap() + 1{
         let series_data: Vec<(f64, f64)> = vec![(centroids[[i, 0]].to_f64().unwrap(), centroids[[i, 1]].to_f64().unwrap())];
         chart.draw_series(
@@ -94,6 +94,7 @@ pub fn scatter_plot(name: &str, data: &Array2<f32>, partitions: &Vec<i32>, centr
                 .map(|(x, y)| Circle::new((*x, *y), 2, (&YELLOW).filled())),
         )?;
     }
+    */
 
     root.present()?;
     Ok(())
