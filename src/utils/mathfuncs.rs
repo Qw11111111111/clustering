@@ -1,6 +1,7 @@
 use ndarray::{arr1, s, Array, Array1, Array2, Axis, Shape};
 use num::ToPrimitive;
 use rand::{thread_rng, Rng};
+use crate::utils::utility::*;
 
 pub fn silhouette_score(x: Array2<f32>, assignments: Vec<i32>, centroids: Array2<f32>) -> f32{
     let mut scores: Vec<f32> = vec![0.0; x.shape()[0]];
@@ -44,35 +45,6 @@ pub fn squared1d(mut x: Array1<f32>) -> Array1<f32> {
     return x;
 }
 
-pub fn argwhere(x: Vec<i32>, value: i32) -> usize {
-    for (i, val) in x.into_iter().enumerate() {
-        if value == val{
-            return i;
-        }
-    }
-    return usize::MAX;
-}
-
-pub fn max(x: Vec<f32>) -> f32 {
-    let mut maximum = - f32::INFINITY;
-    for val in x.into_iter() {
-        if val > maximum {
-            maximum = val;
-        }
-    }
-    return  maximum;
-}
-
-pub fn max_int(x: Vec<i32>) -> i32 {
-    let mut maximum = - i32::MAX;
-    for val in x.into_iter() {
-        if val > maximum {
-            maximum = val;
-        }
-    }
-    return  maximum;
-}
-
 pub fn create_square(min_max: Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
     let mut square = Array::<f32, _>::zeros((n_points, dim));
     let mut rng = thread_rng();
@@ -82,30 +54,6 @@ pub fn create_square(min_max: Vec<f32>, n_points: usize, dim: usize) -> Array2<f
         }
     }
     return square
-}
-
-pub fn print_vec(vector: &Vec<i32>) {
-    for val in vector.into_iter() {
-        let string = val.to_string();
-        print!("{string} ");
-    }
-}
-
-pub fn print_array(array: &Array2<f32>) {
-    for row in array.rows().into_iter() {
-        for value in row.into_iter() {
-            let value_str = value.to_string();
-            print!("{value_str} ");
-        }
-        print!(" | ");
-    }
-}
-
-pub fn print_array1d (array : &Array1<f32>) {
-    for value in array.into_iter() {
-        let value_str = value.to_string();
-        print!("{value_str} ");
-    }
 }
 
 pub fn cumsum (x: &mut Array1<f32>) {

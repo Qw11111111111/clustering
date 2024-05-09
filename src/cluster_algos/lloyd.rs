@@ -2,7 +2,8 @@ use std::vec;
 use rand::prelude::*;
 use ndarray::{Array, Array1, Array2, arr2};
 use num::ToPrimitive;
-use crate::maths::mathfuncs::{silhouette_score, l2, print_vec, print_array, print_array1d, cumsum};
+use crate::utils::mathfuncs::{silhouette_score, l2, cumsum};
+use crate::utils::utility::*;
 
 pub struct Kmeans {
     pub centers: i32 ,
