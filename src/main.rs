@@ -14,38 +14,17 @@ pub mod utils;
 pub mod plots;
 
 fn main() {
-    // need to cluster data somehow... Also need a plot...
-    //let size = 1000;
-    //let dim = 2;
-    //let bias = 42.0;
-    //let weight = 2.0;
-    //let x = x_data_gen(size, dim);
-    //let y = get_y_data(x.clone(), &weight, &bias);
-    let cluster_size = 150;
+    let cluster_size = 300;
     let noise_intensity = 0;
+    let num_clusters = 4;
 
-    
-    let square_1: Array2<f32> = create_square(vec![1.0, 3.0], vec![2.0, 4.0], cluster_size, 2); // Cluster 1
-    let square_2: Array2<f32> = create_square(vec![5.0, 7.0], vec![1.0, 3.0], cluster_size, 2); // Cluster 2
-    let square_3: Array2<f32> = create_square(vec![5.0, 7.0], vec![6.0, 7.0], cluster_size, 2); // Cluster 3
-    let square_4: Array2<f32> = create_square(vec![1.0, 8.0], vec![6.0, 7.0], cluster_size + noise_intensity, 2); // A bunch of noise across them all
-
-    let mut data: Array2<f32> = ndarray::concatenate(
-        Axis(0),
-        &[
-            square_1.view(),
-            square_2.view(),
-            square_3.view(),
-            square_4.view(),
-        ],
-    )
-    .expect("An error occurred while stacking the dataset");
+    let mut data = get_data(noise_intensity, num_clusters, cluster_size);
 
     center_scale(&mut data);
     
     let mut model = DBScan {
-        min_points: 1,
-        epsilon: 50e-2,
+        min_points: 20,
+        epsilon: 15e-2,
         is_in_cluster: HashSet::new(),
         is_visited: HashSet::new(),
         is_noise: HashSet::new(),
@@ -55,14 +34,14 @@ fn main() {
     
     /* 
     let mut model = AgglomerativeCluster {
-        centers: 4,
+        centers: num_clusters,
         clusters: vec![vec![array![0.0]]]
     };
     */
 
     /*
     let mut model = Kmeans  {
-        centers: 4,
+        centers: num_clusters,
         accept: 0.7,
         max_centers: 7,
         initializer: "kmeans++",
@@ -86,21 +65,25 @@ fn main() {
 
 }
 
-fn x_data_gen(size: usize, dim: usize) -> Array2<f64> {
-    let mut data = Array::<f64, _>::ones((size, dim));
-    let mut index_1 = 0.0;
 
-    for mut col in data.columns_mut() {
-        let mut index = 0.0;
-        for num in col.iter_mut() {
-            *num = index * *num - index_1 * (*num);
-            index += 1.0;
-        }
-        index_1 += 1.0;
-    }
+fn get_data(noise_intensity: usize, num_clusters: i32, cluster_size: usize) -> Array2<f32> {
+    let square_1: Array2<f32> = create_square(vec![1.0, 3.0], vec![2.0, 4.0], cluster_size, 2); // Cluster 1
+    let square_2: Array2<f32> = create_square(vec![5.0, 7.0], vec![1.0, 3.0], cluster_size, 2); // Cluster 2
+    let square_3: Array2<f32> = create_square(vec![5.0, 7.0], vec![6.0, 7.0], cluster_size, 2); // Cluster 3
+    let square_4: Array2<f32> = create_square(vec![10.0, 12.0], vec![6.0, 7.0], cluster_size, 2);
+    let square_5: Array2<f32> = create_square(vec![1.0, 8.0], vec![1.0, 7.0], cluster_size / 10 + noise_intensity, 2); // A bunch of noise across them all
+
+    let data: Array2<f32> = ndarray::concatenate(
+        Axis(0),
+        &[
+            square_1.view(),
+            square_2.view(),
+            square_3.view(),
+            square_4.view(),
+            square_5.view()
+        ],
+    )
+    .expect("An error occurred while stacking the dataset");
+
     return data;
-}
-
-fn get_y_data(x: Array2<f64>, weight: &f64, bias: &f64) -> Array2<f64> {
-    return x * *weight + *bias;
 }

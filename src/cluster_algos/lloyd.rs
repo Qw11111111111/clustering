@@ -43,18 +43,8 @@ impl Kmeans {
                 while check_if_finished(&self.centroids - last_centroids.clone()) && count < self.max_iter {
                     count += 1;
                     last_centroids = self.centroids.clone();
-                    //print_vec(&self.partition);
-                    //println!("pre");
-                    //print_array(&self.centroids);
-                    //println!("pre");
                     self.update_partitions(data);
                     self.update_centroids(data);
-                    //print_vec(&self.partition);
-                    //println!("post");
-                    //print_array(&self.centroids);
-                    //println!("post");
-                    //assert!(count < 3);
-                    //print_array(&self.centroids);
                 }
                 let score = silhouette_score(data.clone(), self.partition.clone(), self.centroids.clone());
                 if score > minimum {
@@ -131,16 +121,7 @@ impl Kmeans {
             println!("{str} i");
             */
             for (j, centroid) in self.centroids.rows().into_iter().enumerate() {
-                /*
-                print_array1d(&centroid.to_owned());
-                str = j.to_string();
-                println!("{str} j");*/
-                let dist = l2(&point.to_owned(), &centroid.to_owned(), false);/*
-                let str = dist.to_string();
-                let str2 = j.to_string();
-                let str3 = i.to_string();
-                println!("{str} {str2} {str3} j i");
-                */
+                let dist = l2(&point.to_owned(), &centroid.to_owned(), false);
                 if dist <= min {
                     min = dist;
                     best_centroid = j;

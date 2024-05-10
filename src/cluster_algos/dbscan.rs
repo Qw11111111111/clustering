@@ -16,7 +16,8 @@ pub struct DBScan {
 
 impl DBScan {
     fn initialize(&mut self, data: &Array2<f32>) {
-        self.partitions = vec![9; data.shape()[0]];
+        self.partitions = vec![0; data.shape()[0]];
+        self.current_clusters = 1;
     }
 
     pub fn fit_predict(&mut self, data: &Array2<f32>) -> Vec<i32> {
@@ -71,4 +72,5 @@ impl DBScan {
         }
         return neighbours;
     }
+
 }
