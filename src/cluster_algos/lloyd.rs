@@ -141,7 +141,6 @@ fn random_choice(data: &Array2<f32>, centroids: &mut Array2<f32>) {
             centroids[[i, j]] = data[[random_vec[i], j]];
         }
     }
-    //print_array(centroids);
 }
 
 fn kmeanspp(data: &Array2<f32>, centroids: &mut Array2<f32>) {

@@ -29,7 +29,7 @@ impl DBScan {
             self.is_visited.insert(i);
             let neighbours = self.get_neighbours(data, i);
             if neighbours.len() <= self.min_points {
-                self.is_noise.insert(i);
+                continue;
             }
             else {
                 self.partitions[i] = self.current_clusters;

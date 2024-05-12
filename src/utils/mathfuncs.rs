@@ -45,7 +45,7 @@ pub fn squared1d(mut x: Array1<f32>) -> Array1<f32> {
     return x;
 }
 
-pub fn create_square(min_max_y: Vec<f32>, min_max_x: Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
+pub fn create_square(min_max_y: &Vec<f32>, min_max_x: &Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
     let mut square = Array::<f32, _>::zeros((n_points, dim));
     let mut rng = thread_rng();
     for i in 0..n_points {
