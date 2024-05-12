@@ -1,5 +1,3 @@
-use std::cmp::min_by;
-
 use ndarray::prelude::*;
 use num::ToPrimitive;
 use crate::utils::mathfuncs::*;
@@ -12,6 +10,19 @@ pub struct AgglomerativeCluster {
 }
 
 impl AgglomerativeCluster {
+
+    pub fn new(data: &Array2<f32>, centers: usize) -> AgglomerativeCluster {
+        
+        let mut clusters = vec![vec![data.row(0).to_owned()]];
+        for i in 1..data.shape()[0]{
+            clusters.append(&mut vec![vec![data.row(i).to_owned()]]);
+        }
+        AgglomerativeCluster {
+            centers,
+            clusters: clusters
+        }
+    }
+
     fn initialize(&mut self, data: &Array2<f32>) {
         self.clusters = vec![vec![data.row(0).to_owned()]];
         for i in 1..data.shape()[0]{
@@ -49,7 +60,7 @@ impl AgglomerativeCluster {
                 }
             }
         }
-        return best;
+        best
     }
 
     fn get_partition(&self, data: &Array2<f32>) -> Vec<i32> {

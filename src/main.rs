@@ -17,7 +17,7 @@ pub mod utils;
 pub mod plots;
 
 fn main() {
-    let cluster_size = 1000;
+    let cluster_size = 500;
     let noise_intensity = 20;
     let num_clusters = 4;
     let bounds = vec![vec![vec![1.0, 5.0], vec![1.0, 5.0]], vec![vec![1.0, 3.0], vec![5.0, 6.0]], vec![vec![5.0, 6.0], vec![1.0, 3.0]], vec![vec![5.0, 6.0], vec![5.0, 6.0]]];
@@ -25,16 +25,28 @@ fn main() {
     let mut data = get_data(noise_intensity, num_clusters, cluster_size, bounds);
 
     center_scale(&mut data);
+
+    let mut model = DBScan::new(&data);
+    model.set_epsilon(10e-2);
+    model.set_min_points(20);
+
+
+    let mut model_2 = Kmeans::new(&data, num_clusters);
+    model_2.set_fitting_time(1000, 20);
+
+
+    let mut model_3 = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
     
+    /*
     let mut model = DBScan {
         min_points: 20,
         epsilon: 10e-2,
         is_in_cluster: HashSet::new(),
         is_visited: HashSet::new(),
-        is_noise: HashSet::new(),
         partitions: vec![0],
         current_clusters: 1
     };
+    */
     
     /* 
     let mut model = AgglomerativeCluster {

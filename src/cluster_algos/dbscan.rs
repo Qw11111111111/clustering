@@ -8,13 +8,33 @@ pub struct DBScan {
     pub min_points: usize,
     pub epsilon: f32,
     pub is_visited: HashSet<usize>,
-    pub is_noise: HashSet<usize>,
     pub is_in_cluster: HashSet<usize>,
     pub partitions: Vec<i32>,
     pub current_clusters: i32
 }
 
 impl DBScan {
+
+    pub fn new(data: &Array2<f32>) -> DBScan {
+
+        DBScan{
+            min_points: 10,
+            epsilon: 3e-1,
+            is_visited: HashSet::new(),
+            is_in_cluster: HashSet::new(),
+            partitions: vec![0; data.shape()[0]],
+            current_clusters: 1
+        }
+    }
+
+    pub fn set_min_points(&mut self, min_pts: usize) {
+        self.min_points = min_pts;
+    }
+
+    pub fn set_epsilon(&mut self, epsilon: f32) {
+        self.epsilon = epsilon;
+    }
+
     fn initialize(&mut self, data: &Array2<f32>) {
         self.partitions = vec![0; data.shape()[0]];
         self.current_clusters = 1;

@@ -18,6 +18,36 @@ pub struct Kmeans {
 
 impl Kmeans {
 
+    pub fn new(data: &Array2<f32>, centers: i32) -> Kmeans {
+        Kmeans {
+            centers,
+            max_centers: 10,
+            accept: 0.7,
+            centroids: Array::<f32,_>::zeros((centers.to_usize().unwrap(), data.raw_dim()[1])),
+            partition: vec![0; data.shape()[0]],
+            initializer: "kmeans++",
+            max_iter: 100,
+            retries: 10
+        }
+    }
+
+    pub fn config_silhouette(&mut self, accepted_score: f32) {
+        self.accept = accepted_score;
+    }
+
+    pub fn set_initializer(&mut self, initializer: &'static str) {
+        self.initializer = initializer; 
+    }
+
+    pub fn set_fitting_time(&mut self, max_iter: i32, retries: i32) {
+        self.retries = retries;
+        self.max_iter = max_iter;
+    }
+
+    pub fn set_max_centers(&mut self, max_centers: i32) {
+        self.max_centers = max_centers;
+    }
+
     fn initialize(&mut self, data: &Array2<f32>, n_centers: i32){
         self.centroids = Array::<f32,_>::zeros((n_centers.to_usize().unwrap(), data.raw_dim()[1]));
         if self.initializer == "random_choice" {
