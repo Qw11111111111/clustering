@@ -24,6 +24,7 @@ fn main() {
 
     let mut data = get_data(noise_intensity, num_clusters, cluster_size, bounds);
 
+
     center_scale(&mut data);
 
     let mut model = DBScan::new(&data);
@@ -35,7 +36,7 @@ fn main() {
     model_2.set_fitting_time(1000, 20);
 
 
-    let mut model_3 = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
+    let mut model = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
     
     /*
     let mut model = DBScan {

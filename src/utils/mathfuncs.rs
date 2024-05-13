@@ -38,11 +38,8 @@ pub fn l2(x1: &Array1<f32>, x2: &Array1<f32>, grad: bool) -> f32 {
     }
 }
 
-pub fn squared1d(mut x: Array1<f32>) -> Array1<f32> {
-    for i in 0..x.shape()[0] {
-        x[i] *= x[i];
-    }
-    return x;
+pub fn squared1d(x: Array1<f32>) -> Array1<f32> {
+    x.iter().map(|x| x * x).collect()
 }
 
 pub fn create_square(min_max_y: &Vec<f32>, min_max_x: &Vec<f32>, n_points: usize, dim: usize) -> Array2<f32> {
@@ -81,7 +78,7 @@ pub fn center_scale(data: &mut Array2<f32>){
 
 
 pub fn square(x: f32) -> f32 {
-    return x * x;
+    x * x
 }
 
 pub fn mean_of_vec_arr(vector: &Vec<Array1<f32>>) -> Array1<f32> {

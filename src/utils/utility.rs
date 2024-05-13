@@ -12,13 +12,7 @@ pub fn max(x: Vec<f32>) -> f32 {
 }
 
 pub fn max_int(x: Vec<i32>) -> i32 {
-    let mut maximum = - i32::MAX;
-    for val in x.into_iter() {
-        if val > maximum {
-            maximum = val;
-        }
-    }
-    return  maximum;
+    *x.iter().max().unwrap()
 }
 
 pub fn print_vec(vector: &Vec<i32>) {
