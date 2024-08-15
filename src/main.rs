@@ -1,18 +1,11 @@
-use std::borrow::Borrow;
-use std::collections::HashSet;
-use std::num::NonZeroIsize;
 use std::vec;
 use crate::cluster_algos::agglomerative::AgglomerativeCluster;
 use crate::cluster_algos::dbscan::DBScan;
 use crate::cluster_algos::lloyd::Kmeans;
-use crate::utils::mathfuncs::{silhouette_score, create_square, center_scale};
-use crate::utils::utility::*;
+use crate::utils::mathfuncs::{create_square, center_scale};
 use cluster_algos::agglomerative::{AggloClusterer, get_partitions};
-use num::ToPrimitive;
-use plots::{line_plot, scatter_plot};
-use plotters::prelude::*;
-use ndarray::{array, Array, Array2, Axis, ViewRepr};
-use rand::prelude::*;
+use plots::scatter_plot;
+use ndarray::{array, Array2, Axis};
 use std::time::Instant;
 pub mod cluster_algos;
 pub mod utils;
@@ -29,96 +22,58 @@ fn main() {
 
     center_scale(&mut data);
 
-    let mut model_4 = DBScan::new(&data);
-    //model_4.set_epsilon(10e-2);
-    //model_4.set_min_points(20);
+    let agglo = true;
+    let kmeans = true;
+    let dbscan = true;
+    let agglo_old = true;
 
-
-    let mut model_3 = Kmeans::new(&data, num_clusters);
-    model_3.set_fitting_time(1000, 20);
-
-    let mut model = AggloClusterer::new();
-
-    //let mut model = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
+    if dbscan {
+        let mut dbscan_model = DBScan::new(&data);
+        //model_4.set_epsilon(10e-2);
+        //model_4.set_min_points(20);
+        let now = Instant::now();
+        let partitions_dbscan = dbscan_model.fit_predict(&data);
+        println!("DBScan fitted after {:?}", now.elapsed());
+        let centroids = array![[0.0, 0.0]];
+        let _ = scatter_plot("DBScan_fitted", &data, &partitions_dbscan, &centroids, false);
+    }
+    if kmeans {
+        let mut kmeans_model = Kmeans::new(&data, num_clusters);
+        let now = Instant::now();
+        let partitions_kmeans = kmeans_model.fit_predict(&data);
+        println!("Kmeans fitted after {:?}", now.elapsed());
+        let centroids_kmeans = kmeans_model.centroids;
+        let _ = scatter_plot("kmeans_fitted", &data, &partitions_kmeans, &centroids_kmeans, true);
+    }
+    if agglo {
+        let mut agglo_model = AggloClusterer::new();
+        let now = Instant::now();
+        agglo_model.fit(&data);
+        println!("Agglo clustereer fitted after {:?}", now.elapsed());
+        let partitions_agglo = get_partitions(&agglo_model.retrieve_clusters(num_clusters as usize), &data);
+        let centroids = array![[0.0, 0.0]];
+        let _ = scatter_plot("AggloScan_fitted", &data, &partitions_agglo, &centroids, false);
+    }
+    if agglo_old {
+        let mut agglo_model_old = AgglomerativeCluster::new(&data, num_clusters as usize);
+        let now = Instant::now();
+        let partitions_agglo_old = agglo_model_old.fit_predict(&data);
+        println!("Old Agglo fitted after {:?}", now.elapsed());
+        let centroids = array![[0.0, 0.0]];
+        let _ = scatter_plot("AgglomerativeScan_fitted", &data, &partitions_agglo_old, &centroids, false);
+    }
     
-    /*
-    let mut model = DBScan {
-        min_points: 20,
-        epsilon: 10e-2,
-        is_in_cluster: HashSet::new(),
-        is_visited: HashSet::new(),
-        partitions: vec![0],
-        current_clusters: 1
-    };
-    */
-    
-    
-    let mut model_2 = AgglomerativeCluster {
-        centers: num_clusters as usize,
-        clusters: vec![vec![array![0.0]]]
-    };
-    
-
-    /*
-    let mut model = Kmeans  {
-        centers: num_clusters,
-        accept: 0.7,
-        max_centers: 7,
-        initializer: "kmeans++",
-        centroids: Array::<f32, _>::zeros((1,1)),
-        partition: vec![0; cluster_size * 4 + noise_intensity],
-        max_iter: 3000,
-        retries: 10
-    };
-    */
-    
-    let now = Instant::now();
-    let partitions_2 = model_2.fit_predict(&data);
-    //print_vec(&partitions);
-    println!("agglomerative old is fitted");
-    println!("{:?}", now.elapsed());
-    let now = Instant::now();
-    model.fit(&data);
-    println!("agglo new is fitted");
-    println!("{:?}", now.elapsed());
-    let now = Instant::now();
-    let result = model.retrieve_clusters(num_clusters as usize);
-    let partitions = get_partitions(&result, &data);
-    println!("result generated");
-    println!("{:?}", now.elapsed());
-    let now = Instant::now();
-    let partitions_3 = model_3.fit_predict(&data);
-    let centroids_kmeans = model_3.centroids;
-    //print_vec(&partitions);
-    println!("kmeans is fitted");
-    println!("{:?}", now.elapsed());
-    let now = Instant::now();
-    let partitions_4 = model_4.fit_predict(&data);
-    //print_vec(&partitions);
-    println!("dbscan old is fitted");
-    println!("{:?}", now.elapsed());
-    //print_array(&model.centroids);
-    println!("");
-    //print_vec(&partitions);
-    let centroids = array![[0.0, 0.0]];
-    //println!("");
-    let _ = scatter_plot("AggloScan_fitted", &data, &partitions, &centroids, false);
-    let _ = scatter_plot("AgglomerativeScan_fitted", &data, &partitions_2, &centroids, false);
-    let _ = scatter_plot("kmeans_fitted", &data, &partitions_3, &centroids_kmeans, true);
-    let _ = scatter_plot("DBScan_fitted", &data, &partitions_4, &centroids, false);
-    println!("plot generated");
-
-
+    println!("all plots generated");
 }
 
 
-fn get_data(noise_intensity: usize, num_clusters: i32, cluster_size: usize, bounds: Vec<Vec<Vec<f32>>>) -> Array2<f32> {
-    let mut squares: Vec<Array2<ViewRepr<f32>>> = vec![];
+fn get_data(noise_intensity: usize, num_clusters: i32, cluster_size: usize, _bounds: Vec<Vec<Vec<f32>>>) -> Array2<f32> {
+    //let mut squares: Vec<Array2<ViewRepr<f32>>> = vec![];
 
-    for i in 0..num_clusters {
-        let x_bound = &bounds[i.to_usize().unwrap()][0];
-        let y_bound = &bounds[i.to_usize().unwrap()][1];
-        let square = create_square(y_bound, x_bound, cluster_size, 2);
+    for _i in 0..num_clusters {
+        //let x_bound = &bounds[i.to_usize().unwrap()][0];
+        //let y_bound = &bounds[i.to_usize().unwrap()][1];
+        //let square = create_square(y_bound, x_bound, cluster_size, 2);
         //squares.push(&square.view());
     }
 

@@ -1,7 +1,6 @@
 use ndarray::prelude::*;
 use num::ToPrimitive;
 use crate::utils::mathfuncs::*;
-use std::boxed::Box;
 use std::rc::Rc;
 
 pub struct Cluster {
@@ -52,7 +51,7 @@ impl AggloClusterer {
         }
     }
 
-    fn insert(&mut self, mut cluster: Cluster) {
+    fn _insert(&mut self, mut cluster: Cluster) {
         if let Some(cur) = &self.head {
             for (i, coord) in cluster.center.iter_mut().enumerate() {
                 *coord += *cur.center.get(i).unwrap();

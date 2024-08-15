@@ -1,4 +1,4 @@
-use ndarray::{arr1, s, Array, Array1, Array2, Axis, Shape};
+use ndarray::{Array, Array1, Array2, Axis};
 use num::ToPrimitive;
 use rand::{thread_rng, Rng};
 use crate::utils::utility::*;
@@ -60,7 +60,7 @@ pub fn create_square(min_max_y: &Vec<f32>, min_max_x: &Vec<f32>, n_points: usize
 
 pub fn cumsum (x: &mut Array1<f32>) {
     let mut last = 0.0;
-    for (i, val) in x.into_iter().enumerate() {
+    for (_i, val) in x.into_iter().enumerate() {
         *val += last;
         last = *val;
     }
@@ -69,7 +69,7 @@ pub fn cumsum (x: &mut Array1<f32>) {
 pub fn center_scale(data: &mut Array2<f32>){
     let std = data.std_axis(Axis(0), 1.);
     let mean = data.mean_axis(Axis(0)).unwrap();
-    for (i, row) in data.rows_mut().into_iter().enumerate(){
+    for (_i, row) in data.rows_mut().into_iter().enumerate(){
         for (j, num) in row.into_iter().enumerate() {
             *num = (*num - mean[j]) / std[j];
         }

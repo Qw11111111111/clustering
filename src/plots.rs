@@ -1,8 +1,7 @@
-use std::{thread::panicking, vec};
+use std::vec;
 use num::ToPrimitive;
 use plotters::{prelude::*, style::full_palette::CYAN_A700};
-use ndarray::{array, Array, Array1, Array2};
-use crate::utils::mathfuncs::*;
+use ndarray::{Array, Array1, Array2};
 use crate::utils::utility::*;
 
 pub fn line_plot(x: &Array2<f64>, y: &Array1<f64>, pred: &Array1<f64>, name: String) -> Result<(), Box<dyn std::error::Error>> {
