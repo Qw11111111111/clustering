@@ -7,17 +7,19 @@ use crate::cluster_algos::dbscan::DBScan;
 use crate::cluster_algos::lloyd::Kmeans;
 use crate::utils::mathfuncs::{silhouette_score, create_square, center_scale};
 use crate::utils::utility::*;
+use cluster_algos::agglomerative::{AggloClusterer, get_partitions};
 use num::ToPrimitive;
 use plots::{line_plot, scatter_plot};
 use plotters::prelude::*;
 use ndarray::{array, Array, Array2, Axis, ViewRepr};
 use rand::prelude::*;
+use std::time::Instant;
 pub mod cluster_algos;
 pub mod utils;
 pub mod plots;
 
 fn main() {
-    let cluster_size = 500;
+    let cluster_size = 100;
     let noise_intensity = 20;
     let num_clusters = 4;
     let bounds = vec![vec![vec![1.0, 5.0], vec![1.0, 5.0]], vec![vec![1.0, 3.0], vec![5.0, 6.0]], vec![vec![5.0, 6.0], vec![1.0, 3.0]], vec![vec![5.0, 6.0], vec![5.0, 6.0]]];
@@ -27,16 +29,17 @@ fn main() {
 
     center_scale(&mut data);
 
-    let mut model = DBScan::new(&data);
-    model.set_epsilon(10e-2);
-    model.set_min_points(20);
+    let mut model_4 = DBScan::new(&data);
+    //model_4.set_epsilon(10e-2);
+    //model_4.set_min_points(20);
 
 
-    let mut model_2 = Kmeans::new(&data, num_clusters);
-    model_2.set_fitting_time(1000, 20);
+    let mut model_3 = Kmeans::new(&data, num_clusters);
+    model_3.set_fitting_time(1000, 20);
 
+    let mut model = AggloClusterer::new();
 
-    let mut model = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
+    //let mut model = AgglomerativeCluster::new(&data, num_clusters.to_usize().unwrap());
     
     /*
     let mut model = DBScan {
@@ -49,12 +52,12 @@ fn main() {
     };
     */
     
-    /* 
-    let mut model = AgglomerativeCluster {
-        centers: num_clusters,
+    
+    let mut model_2 = AgglomerativeCluster {
+        centers: num_clusters as usize,
         clusters: vec![vec![array![0.0]]]
     };
-    */
+    
 
     /*
     let mut model = Kmeans  {
@@ -68,15 +71,41 @@ fn main() {
         retries: 10
     };
     */
-    let partitions = model.fit_predict(&data);
-    print_vec(&partitions);
-    println!("models is fitted");
+    
+    let now = Instant::now();
+    let partitions_2 = model_2.fit_predict(&data);
+    //print_vec(&partitions);
+    println!("agglomerative old is fitted");
+    println!("{:?}", now.elapsed());
+    let now = Instant::now();
+    model.fit(&data);
+    println!("agglo new is fitted");
+    println!("{:?}", now.elapsed());
+    let now = Instant::now();
+    let result = model.retrieve_clusters(num_clusters as usize);
+    let partitions = get_partitions(&result, &data);
+    println!("result generated");
+    println!("{:?}", now.elapsed());
+    let now = Instant::now();
+    let partitions_3 = model_3.fit_predict(&data);
+    let centroids_kmeans = model_3.centroids;
+    //print_vec(&partitions);
+    println!("kmeans is fitted");
+    println!("{:?}", now.elapsed());
+    let now = Instant::now();
+    let partitions_4 = model_4.fit_predict(&data);
+    //print_vec(&partitions);
+    println!("dbscan old is fitted");
+    println!("{:?}", now.elapsed());
     //print_array(&model.centroids);
     println!("");
     //print_vec(&partitions);
     let centroids = array![[0.0, 0.0]];
     //println!("");
-    let _ = scatter_plot("DBScan_fitted", &data, &partitions, &centroids);
+    let _ = scatter_plot("AggloScan_fitted", &data, &partitions, &centroids, false);
+    let _ = scatter_plot("AgglomerativeScan_fitted", &data, &partitions_2, &centroids, false);
+    let _ = scatter_plot("kmeans_fitted", &data, &partitions_3, &centroids_kmeans, true);
+    let _ = scatter_plot("DBScan_fitted", &data, &partitions_4, &centroids, false);
     println!("plot generated");
 
 

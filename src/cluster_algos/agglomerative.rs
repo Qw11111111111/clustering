@@ -1,8 +1,146 @@
 use ndarray::prelude::*;
 use num::ToPrimitive;
 use crate::utils::mathfuncs::*;
-use crate::utils::utility::*;
+use std::boxed::Box;
+use std::rc::Rc;
 
+pub struct Cluster {
+    cluster_1: Option<Rc<Cluster>>,
+    cluster_2: Option<Rc<Cluster>>,
+    pub members: Vec<usize>,
+    index: usize,
+    center: Array1<f32>
+}
+
+impl Cluster {
+    fn new(item: usize, center: Array1<f32>) -> Self {
+        Self {
+            cluster_1: None, 
+            cluster_2: None,
+            members: vec![item],
+            index: 0,
+            center: center
+        }
+    }
+
+    fn next_cluster(cluster_1: Rc<Cluster>, cluster_2: Rc<Cluster>, index: usize) -> Self {
+        let mut members = Vec::new();
+        members.append(cluster_1.members.clone().as_mut());
+        members.append(cluster_2.members.clone().as_mut());
+        let mut center = Array1::zeros(cluster_1.center.len());
+        for i in 0..center.len() {
+            center[i] = *cluster_1.center.get(i).unwrap() + *cluster_2.center.get(i).unwrap();
+        } 
+        Self {
+            cluster_1: Some(Rc::clone(&cluster_1)),
+            cluster_2: Some(Rc::clone(&cluster_2)),
+            members: members,
+            index: index,
+            center: center
+        }
+    }
+}
+
+pub struct AggloClusterer {
+    pub head: Option<Rc<Cluster>>,
+}
+
+impl AggloClusterer {
+    pub fn new() -> Self {
+        Self {
+            head: None
+        }
+    }
+
+    fn insert(&mut self, mut cluster: Cluster) {
+        if let Some(cur) = &self.head {
+            for (i, coord) in cluster.center.iter_mut().enumerate() {
+                *coord += *cur.center.get(i).unwrap();
+            }
+            cluster.members.append(cur.members.clone().as_mut());
+            cluster.cluster_2 = Some(Rc::clone(cur));
+        }
+        self.head = Some(Rc::new(cluster));
+    }
+
+    pub fn retrieve_clusters(&self, n_clusters: usize) -> Vec<Rc<Cluster>> {
+        //println!("retrieveing");
+        if let Some(mut current) = self.head.clone() {
+            if n_clusters == 1 {
+                return vec![Rc::clone(&current)];
+            }
+            //let mut clusters = Vec::new();
+            let mut all_clusters = Vec::new();
+            while all_clusters.len() < n_clusters {
+                if all_clusters.len() > 1 {
+                    all_clusters.remove(0);
+                }
+                if let Some(cluster_1) = &current.cluster_1 {
+                    all_clusters.push(Rc::clone(cluster_1));
+                }
+                if let Some(cluster_2) = &current.cluster_2 {
+                    all_clusters.push(Rc::clone(cluster_2));
+                }
+                all_clusters.sort_by(|a, b| {
+                    b.index.cmp(&a.index)
+                });
+                current = Rc::clone(&all_clusters[0]);
+            }
+            //println!("done");
+            all_clusters
+        }
+        else {
+            Vec::new()
+        }
+    }
+
+    pub fn fit(&mut self, data: &Array2<f32>) {
+        let mut all_clusters: Vec<Rc<Cluster>> = data.axis_iter(Axis(0)).enumerate().map(|(i, _item)| {
+            Rc::new(Cluster::new(i, data.row(i).clone().to_owned()))
+        }).collect();
+        let mut index = 1;
+        let mut min: f32;
+        let mut min_idx: (usize, usize);
+        //println!("{}", all_clusters.len());
+        while all_clusters.len() > 1 {
+            min = f32::MAX;
+            min_idx = (0, 0);
+            for i in 0..all_clusters.len() - 1 {
+                for j in i + 1..all_clusters.len() {
+                    let mut center_1 = all_clusters[i].center.clone();
+                    let mut center_2 = all_clusters[j].center.clone();
+                    center_1 /= all_clusters[i].members.len() as f32;
+                    center_2 /= all_clusters[j].members.len() as f32;
+                    let distance = l2(&center_1, &center_2, false);
+                    if distance < min {
+                        min_idx = (i, j);
+                        min = distance;
+                    }
+                }
+            }
+            let new_cluster = Cluster::next_cluster(Rc::clone(&all_clusters[min_idx.0]), Rc::clone(&all_clusters[min_idx.1]), index);
+            index += 1;
+            all_clusters[min_idx.0] = Rc::new(new_cluster);
+            all_clusters.remove(min_idx.1);
+            //println!("{}", all_clusters.len());
+        }
+        self.head = Some(all_clusters[0].clone());
+    }
+}
+
+pub fn get_partitions(clusters: &Vec<Rc<Cluster>>, data: &Array2<f32>) -> Vec<i32> {
+    //println!("{}", data.len_of(Axis(0)));
+    let mut partitions = Vec::new();
+    for i in 0..data.len_of(Axis(0)) {
+        for (j, cluster) in clusters.iter().enumerate() {
+            if cluster.members.contains(&i) {
+                partitions.push(j as i32);
+            }
+        }
+    }
+    //println!("{}", partitions.len());
+    partitions
+}
 
 pub struct AgglomerativeCluster {
     pub centers: usize,

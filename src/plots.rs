@@ -42,7 +42,7 @@ pub fn line_plot(x: &Array2<f64>, y: &Array1<f64>, pred: &Array1<f64>, name: Str
     Ok(())
 }
 
-pub fn scatter_plot(name: &str, data: &Array2<f32>, partitions: &Vec<i32>, centroids: &Array2<f32>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn scatter_plot(name: &str, data: &Array2<f32>, partitions: &Vec<i32>, centroids: &Array2<f32>, plot_centroids: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut path = String::from("./images/");
 
@@ -85,16 +85,17 @@ pub fn scatter_plot(name: &str, data: &Array2<f32>, partitions: &Vec<i32>, centr
                 .map(|(x, y)| Circle::new((*x, *y), 2, styles[i.to_usize().unwrap()].filled())),
         )?;
     }
-    /*
-    for i in 0..max.to_usize().unwrap() + 1{
-        let series_data: Vec<(f64, f64)> = vec![(centroids[[i, 0]].to_f64().unwrap(), centroids[[i, 1]].to_f64().unwrap())];
-        chart.draw_series(
-            series_data
-                .iter()
-                .map(|(x, y)| Circle::new((*x, *y), 2, (&YELLOW).filled())),
-        )?;
+    if plot_centroids {
+        for i in 0..max.to_usize().unwrap() + 1{
+            let series_data: Vec<(f64, f64)> = vec![(centroids[[i, 0]].to_f64().unwrap(), centroids[[i, 1]].to_f64().unwrap())];
+            chart.draw_series(
+                series_data
+                    .iter()
+                    .map(|(x, y)| Circle::new((*x, *y), 2, (&YELLOW).filled())),
+            )?;
+        }
     }
-    */
+    
 
     root.present()?;
     Ok(())

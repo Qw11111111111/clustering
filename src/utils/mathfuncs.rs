@@ -34,7 +34,7 @@ pub fn l2(x1: &Array1<f32>, x2: &Array1<f32>, grad: bool) -> f32 {
         return 0.0;
     }
     else {
-        return 0.5 * squared1d(x1 - x2).sum().sqrt();
+        return squared1d(x1 - x2).sum().sqrt();
     }
 }
 
