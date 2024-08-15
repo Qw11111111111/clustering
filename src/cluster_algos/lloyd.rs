@@ -126,8 +126,8 @@ impl Kmeans {
                 if num == i.clone().to_i32().unwrap() {
                     for k in 0..centroid.shape()[0] {
                         mean[k] += data[[j, k]]; 
-                        counter += 1.0;
                     }
+                    counter += 1.0;
                 }
             }
             if mean == Array::<f32, _>::zeros(centroid.shape()) {
